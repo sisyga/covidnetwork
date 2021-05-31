@@ -20,10 +20,7 @@ if __name__ == '__main__':
     n02min, n02max = round(50 * data[0] / 10), round(50 * data[2])
     n02_domain = np.arange(n02min, n02max+1)
     delaymin, delaymax = 0, 10
-    # print(n01min, n01max, n02min, n02max)
-    # assert n01max > np.inf
     delay_domain = np.arange(delaymin, delaymax+1)
-    # print(len(data_ext[delaymax:tmax+delaymax]), tmax)
     prior = Distribution(n01=RV('uniform', n01min, n01max+0.5),
                          n02=RV('uniform', n02min, n02max+0.5),
                          k=RV('randint', kmin, kmax),

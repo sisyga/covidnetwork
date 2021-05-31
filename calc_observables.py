@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
-import pandas as pd
-
+import string
+from itertools import cycle
 def calc_observables(df, populations, window=7, countrylabel='Country', newcaselabel='New cases',
                      cumcaselabel='Confirmed', tlag=10):
     countries = set(df[countrylabel])
@@ -42,3 +42,35 @@ def plot_errorshade(x, y, yerr, ax=None, **kwargs):
     plot, = ax.plot(x, y, **kwargs)
     shade = ax.fill_between(x, y - yerr, y + yerr, color=plot.get_color(), alpha=0.5)
     return plot
+
+
+
+def label_axes(fig, labels=None, loc=None, **kwargs):
+    """
+    Walks through axes and labels each.
+
+    kwargs are collected and passed to `annotate`
+
+    Parameters
+    ----------
+    fig : Figure
+         Figure object to work on
+
+    labels : iterable or None
+        iterable of strings to use to label the axes.
+        If None, lower case letters are used.
+
+    loc : len=2 tuple of floats
+        Where to put the label in axes-fraction units
+    """
+    if labels is None:
+        labels = string.ascii_lowercase
+
+    # re-use labels rather than stop labeling
+    labels = cycle(labels)
+    if loc is None:
+        loc = (-0.05, 1.05)
+    for ax, lab in zip(fig.axes, labels):
+        ax.annotate(lab, xy=loc, ha='right', weight='bold', size=10,
+                    xycoords='axes fraction',
+                    **kwargs)

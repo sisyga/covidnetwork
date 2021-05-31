@@ -32,23 +32,27 @@ class SEIR_Simulator(DiseaseSimulator):
         :param statename: New state, should be one of self.statenames
         :return:
         """
-        inds = npr.choice(self.ntot, size=n, replace=False)
-        if isinstance(state, str):
-            state = self.statenames.index(state)
+        if n == 0:
+            return
 
-        self.states[inds] = state
+        else:
+            inds = npr.choice(self.ntot, size=n, replace=False)
+            if isinstance(state, str):
+                state = self.statenames.index(state)
 
-        if state == 1:
-            tis = self.t_i_d.rvs(n)
-            if randomize_waitingtime:
-                tis -= np.random.uniform(low=0, high=self.params['t_i']+self.params['s_i'], size=n)
-            self.progtime[inds] = tis
+            self.states[inds] = state
 
-        elif state == 2:
-            tis = self.t_r_d.rvs(n)
-            if randomize_waitingtime:
-                tis -= np.random.uniform(low=0, high=self.params['t_r'], size=n)
-            self.progtime[inds] = tis
+            if state == 1:
+                tis = self.t_i_d.rvs(n)
+                if randomize_waitingtime:
+                    tis -= np.random.uniform(low=0, high=self.params['t_i']+self.params['s_i'], size=n)
+                self.progtime[inds] = tis
+
+            elif state == 2:
+                tis = self.t_r_d.rvs(n)
+                if randomize_waitingtime:
+                    tis -= np.random.uniform(low=0, high=self.params['t_r'], size=n)
+                self.progtime[inds] = tis
 
     def stopcondition(self, n_t):
         n = n_t[-1]
@@ -91,37 +95,17 @@ def newcases_seir(n_t):
 
 if __name__ == '__main__':
     tmax = 100
-    n = int(1e6)
+    n = round(3e5)
 
-    k = 6
-    # p_inf = 2.5 / 10 / k
-    # # p_edge = 0.75
-    #
-    # househouldsizes = [17333,	13983,	4923,	3748,	1390]  # household frequences in Munich
-    # sizes = get_householdsizes(n, dist=househouldsizes)
-    # n = sizes.sum()
-    # k_outofhh = 9  # contacts out of the households
-    # p_offblock = k_outofhh / n
-    # p = np.ones((len(sizes), len(sizes)), dtype=np.float32) * p_offblock
-    # p[np.diag_indices(len(p))] = 1
+    k = 32
     graphparams = {'n': n, 'k': k, 'p': 1e-4}
 
 
-    nw = SEIR_Simulator(graphtype='watts strogatz', graphparams=graphparams, p_inf=0.025)
+    nw = SEIR_Simulator(graphtype='watts strogatz', graphparams=graphparams, p_inf=0.02)
     # nw.set_states_random(np.ceil(nw.ntot/1000).astype(int), 'infected')
-    nw.set_states_random(635, 'infected')
-    nw.set_states_random(60, 'exposed')
-    # print(nx.algorithms.average_clustering(nw.G), get_meandegree(nw.G))
+    nw.set_states_random(81, 'infected')
+    nw.set_states_random(33, 'exposed')
     nw.timeevo(tmax=100, recordfull=False)
-    # plt.style.use('seaborn-bright')
-    data = np.load('casespm_de_mar16_jun6.npy')
-    plt.plot(data)
-    plt.plot(newcases_seir(nw.n_t))
+    plt.plot(newcases_seir(nw.n_t), label='New cases')
     nw.plot_n_t()
-    # plt.title('Clustered powerlaw graph, $n = {}, k = {}, p = {}$'.format(*graphparams.values()))
     plt.show()
-    # nw.draw_network(legend=True)
-    # plt.savefig('model snapshot.pdf', dpi=600)
-    # ani = nw.animate_network(legend=True)
-    # ani.save('Clustered powerlaw graph k={}.mp4'.format(k))
-    # plt.show()
